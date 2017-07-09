@@ -1,0 +1,42 @@
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sidekiq
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sidekiq
+    spec:
+      containers:
+        - name: sidekiq
+          image: "mahaga50/drkiq:1"
+          args: ["bundle", "exec", "sidekiq", "-C", "config/sidekiq.yml"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: DATABASE_URL
+            - name: WORKER_PROCESSES
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: WORKER_PROCESSES
+            - name: LISTEN_ON
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: LISTEN_ON
+            - name: CACHE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: CACHE_URL
+            - name: JOB_WORKER_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: env-config
+                  key: JOB_WORKER_URL

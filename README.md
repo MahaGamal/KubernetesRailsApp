@@ -1,27 +1,29 @@
-== README
+**Rails application running with Kubernetes Using the Minikube**
+     
+**Goals**:
+   1- Create an image for a Rails application
+   2- create a ConfigMap to define environment variables 
+   3- Create a Database, Cache and Rails services
 
-**Rails application running with Kubernetes Using the Minikube
 
-*Prerequisites
+_Prerequisites_
  install docker, Minikube and kubectl
-
- starting 
-  minikube start 
-  eval $(minikube docker-env)
-
-*Building our Rails Images
-
-  using the rails application that can be found here [https://semaphoreci.com/community/tutorials/dockerizing-a-ruby-on-rails-application]. follow along. 
-
- after follow, let’s build the image and give it a [drkiq, sidekiq] name
  
-  `docker build -t drkiq:1 .`
-  `docker build -t sidekiq:1 .`
+ _start cluster_
+  `minikube start` 
+  `eval $(minikube docker-env)`
+
+_Building our Rails Images_
+
+  Using the rails application that can be found here [https://semaphoreci.com/community/tutorials/dockerizing-a-ruby-on-rails-application]. follow along. 
+
+ after follow, let’s build the image and give it a [mahaga50/drkiq] name
+ 
+  `docker build -t mahaga50/drkiq:1 .`
   
+_Creating the env ConfigMap_
 
-Creating the env ConfigMap
-
-	``` kubectl create configmap env-config \
+	` kubectl create configmap env-config \
 	--from-literal=postgres_user=drkiq \
 	--from-literal=postgres_password=yourpassword \
 	--from-literal=postgres_host=postgres \
@@ -29,27 +31,31 @@ Creating the env ConfigMap
 	--from-literal=LISTEN_ON=0.0.0.0:8000 \
 	--from-literal=DATABASE_URL=postgresql://drkiq:yourpassword@postgres:5432/drkiq?encoding=utf8&pool=5&timeout=5000 \
 	--from-literal=CACHE_URL=redis://redis:6379/0 \
- 	--from-literal=JOB_WORKER_URL=redis://redis:6379/0 ```
+ 	--from-literal=JOB_WORKER_URL=redis://redis:6379/0 `
+
  to check configration
-  kubectl get configmap env-config -o yaml
- to edit 
-  kubectl edit configmap env-config
+  `kubectl get configmap env-config -o yaml`
+ if found error you can edit: 
+  `kubectl edit configmap env-config`
 
-Creating a Database Deployment
+_Creating a Database and Cache Deployment_
+
  Creating the postgres service
-   kubectl create -f deployments/postgres.yml
+   `kubectl create -f deploy/postgres.yml`
+
  Creating the redis service
-   kubectl create -f deployments/redis.yml
+   `kubectl create -f deploy/redis.yml`
 
-Creating a app Deployment
+_Creating an app Deployment_
   
-  kubectl create -f deployments/drkiq.yml
-  kubectl create -f deployments/sidekiq.yml
+  `kubectl create -f deploy/drkiq.yml`
+  `kubectl create -f deploy/sidekiq.yml`
 
 
-Initialize the Database
-kubectl exec [podid] -it -- rake db:reset
-kubectl exec [podid] -it -- rake db:migrate
+_Initialize the Database_
 
-start service
-minikube service drkiq --url
+  `kubectl exec [podid] -it -- rake db:reset`
+   `kubectl exec [podid] -it -- rake db:migrate`
+
+_start service_
+  `minikube service drkiq --url`
